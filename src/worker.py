@@ -54,7 +54,19 @@ def scan_once(min_spread_bps: float, notional_usd: float) -> Dict[str, Any]:
     if mid_c <= 0:
         return {"event": "bad_mid"}
     spread_bps = (mid_r - mid_c) / mid_c * 10_000.0
-    friction_bps = 15.0  # toy — not Jito tip math
+    max_sane = float(os.environ.get("MAX_SANE_SPREAD_BPS") or 80)
+    if spread_bps > max_sane:
+        return {
+            "event": "quote_reject_insane_spread",
+            "spread_bps": round(spread_bps, 2),
+            "max_sane_spread_bps": max_sane,
+            "cheap": cheap,
+            "rich": rich,
+            "n_venues": len(venues),
+            "mode": "simulate",
+            "would_bundle": False,
+        }
+    friction_bps = float(os.environ.get("FRICTION_BPS_TOY") or 15)
     edge_bps = spread_bps - friction_bps
     est_pnl = notional_usd * (edge_bps / 10_000.0)
 
@@ -67,6 +79,7 @@ def scan_once(min_spread_bps: float, notional_usd: float) -> Dict[str, Any]:
         "cheap": cheap,
         "rich": rich,
         "n_venues": len(venues),
+        "venues": venues,
         "opportunity": edge_bps >= min_spread_bps,
         "mode": "simulate",
         "would_bundle": False,
