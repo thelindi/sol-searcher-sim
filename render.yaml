@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: sol-searcher-sim
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m src.worker
+    envVars:
+      - key: MODE
+        value: simulate
+      - key: POLL_SECONDS
+        value: "5"
+      - key: MIN_SPREAD_BPS
+        value: "25"
+      - key: NOTIONAL_USD
+        value: "250"
+      - key: LOG_JSON
+        value: "1"
+      - key: PYTHON_VERSION
+        value: "3.11.9"
